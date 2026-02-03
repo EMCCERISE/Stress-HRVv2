@@ -81,7 +81,7 @@ public class BpmClient : MonoBehaviour
                     OnBpmChanged?.Invoke(LastBpm);
 
                     if (bpmText) bpmText.text = "?? bpm";
-                    SetStatus("HTTP erro: " + req.error);
+                    SetStatus($"OK {serverIp}:{serverPort}" + req.error);
                 }
             }
 
