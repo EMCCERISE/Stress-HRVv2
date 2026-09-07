@@ -15,6 +15,12 @@ public class BpmClient : MonoBehaviour
     public float intervalSeconds = 0.5f;
     public int timeoutSeconds = 3;
 
+    [Header("Fallback Settings")]
+    [Tooltip("If true, sends the fallback BPM when the server is unreachable or offline.")]
+    public bool useFallbackOnDisconnect = true;
+    [Tooltip("The fallback BPM value to send when offline.")]
+    public int fallbackBpmValue = 60;
+
     private string serverIp;
     private int serverPort;
     private string bpmUrl;
@@ -23,6 +29,21 @@ public class BpmClient : MonoBehaviour
     // (1) ADICIONE: evento e propriedade
     public event Action<int?> OnBpmChanged;
     public int? LastBpm { get; private set; }
+
+    void Start()
+    {
+        if (useFallbackOnDisconnect)
+        {
+            LastBpm = fallbackBpmValue;
+            if (bpmText) bpmText.text = fallbackBpmValue + " bpm (fb)";
+            SetStatus($"Usando BPM de Fallback inicial: {fallbackBpmValue}");
+        }
+        else
+        {
+            if (bpmText) bpmText.text = "-- bpm";
+        }
+    }
+
     public void SetServer(string ip, int port)
     {
         serverIp = ip;
@@ -32,7 +53,7 @@ public class BpmClient : MonoBehaviour
         if (pollingCo != null) StopCoroutine(pollingCo);
         pollingCo = StartCoroutine(PollLoop());
 
-        SetStatus($"Conectando a {serverIp}:{serverPort} …");
+        SetStatus($"Conectando a {serverIp}:{serverPort}...");
     }
 
     IEnumerator PollLoop()
@@ -57,16 +78,21 @@ public class BpmClient : MonoBehaviour
                     var json = req.downloadHandler.text;
                     int? bpm = TryParseBpm(json);
 
+                    bool isFallbackActive = false;
+                    if (!bpm.HasValue && useFallbackOnDisconnect)
+                    {
+                        bpm = fallbackBpmValue;
+                        isFallbackActive = true;
+                    }
 
                     // (2) ADICIONE: guarde e notifique
                     LastBpm = bpm;
                     OnBpmChanged?.Invoke(LastBpm);
 
-
                     if (bpm.HasValue && bpm.Value > 0)
                     {
-                        if (bpmText) bpmText.text = bpm.Value + " bpm";
-                        SetStatus($"OK {serverIp}:{serverPort}");
+                        if (bpmText) bpmText.text = bpm.Value + (isFallbackActive ? " bpm (fb)" : " bpm");
+                        SetStatus($"OK {serverIp}:{serverPort}" + (isFallbackActive ? " (Fallback)" : ""));
                     }
                     else
                     {
@@ -76,12 +102,23 @@ public class BpmClient : MonoBehaviour
                 }
                 else
                 {
-                    // (3) ADICIONE: propaga null quando der erro
-                    LastBpm = null;
-                    OnBpmChanged?.Invoke(LastBpm);
+                    // (3) ADICIONE: propaga null ou fallback quando der erro
+                    if (useFallbackOnDisconnect)
+                    {
+                        LastBpm = fallbackBpmValue;
+                        OnBpmChanged?.Invoke(LastBpm);
 
-                    if (bpmText) bpmText.text = "?? bpm";
-                    SetStatus($"OK {serverIp}:{serverPort}" + req.error);
+                        if (bpmText) bpmText.text = fallbackBpmValue + " bpm (fb)";
+                    }
+                    else
+                    {
+                        LastBpm = null;
+                        OnBpmChanged?.Invoke(LastBpm);
+
+                        if (bpmText) bpmText.text = "?? bpm";
+                    }
+                    
+                    SetStatus($"ERROR {serverIp}:{serverPort}: " + req.error);
                 }
             }
 
