@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coleta de Dados MetaQuest</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="/static/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="background-mesh"></div>
+    
+    <div class="container">
+        <header>
+            <h1>Sincronização Neural <span>// Coleta</span></h1>
+            <nav>
+                <button id="nav-live" class="nav-btn active">Coleta ao Vivo</button>
+                <button id="nav-history" class="nav-btn">Histórico de Sessões</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- SEÇÃO 1: COLETA AO VIVO -->
+            <section id="section-live" class="glass-panel active">
+                <div class="panel-header">
+                    <h2>Nova Sessão de Coleta</h2>
+                    <div class="status-indicator" id="live-status">
+                        <span class="dot"></span>
+                        <span class="text">Aguardando Início</span>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <div class="input-group">
+                        <label for="username">Nome do Usuário</label>
+                        <input type="text" id="username" placeholder="Ex: Paciente 01">
+                    </div>
+                    <button id="btn-start" class="btn primary">Iniciar Coleta</button>
+                    <button id="btn-stop" class="btn danger" disabled>Parar Coleta</button>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <h3>BPM Atual</h3>
+                        <div class="value" id="val-bpm">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>HRV (RMSSD)</h3>
+                        <div class="value" id="val-hrv">--</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="liveChart"></canvas>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 2: HISTÓRICO -->
+            <section id="section-history" class="glass-panel">
+                <div class="panel-header">
+                    <h2>Histórico de Sessões</h2>
+                    <button id="btn-refresh-history" class="btn secondary">Atualizar</button>
+                </div>
+
+                <div class="history-layout">
+                    <div class="session-list" id="session-list">
+                        <!-- Items inseridos via JS -->
+                    </div>
+                    <div class="session-details">
+                        <h3 id="hist-session-title">Selecione uma sessão</h3>
+                        <div class="chart-container">
+                            <canvas id="historyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

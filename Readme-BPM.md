@@ -69,3 +69,31 @@ Nos estados mais calmos, a Ã¡rea de emissÃ£o dos efeitos visuais se expande suti
 
 ### 5. TurbulÃªncia e Fluxo Laminar (Noise)
 Na natureza, movimentos caÃ³ticos transmitem perigo e instabilidade instintiva (como enxames ou fumaÃ§a de incÃªndio). No auge do relaxamento, o script zera quase completamente a turbulÃªncia do sistema de partÃ­culas, resultando em um fluxo "laminar" e previsÃ­vel que transmite uma forte sensaÃ§Ã£o de estabilidade e seguranÃ§a ao cÃ©rebro subconsciente.
+
+---
+
+## Coleta de Dados Web (Dashboard) - Fluxo MetaQuest -> PC
+
+Foi adicionado um fluxo alternativo (e mais robusto) para testes e experimentos clínicos onde o MetaQuest l o monitor Bluetooth nativamente e **envia** (faz upload) desses dados para um Dashboard rodando no PC.
+
+### O que compe esse fluxo?
+1. **O Servidor (PC):** Um backend FastAPI (localizado na pasta `coleta/server.py`) que usa SQLite3 para gravar as sessões. Ele inclui um Frontend moderno (HTML/JS/Chart.js) rodando na porta `5002` para visualização em tempo real.
+2. **O Cliente (MetaQuest):** O script `ColetaSender.cs` atua ouvindo o gerenciador BLE nativo do Quest (`QuestBleManager`). Assim que as leituras acontecem, ele envia pacotes HTTP POST contendo os JSONs com os dados cardíacos diretamente para o PC.
+
+### Como Executar o Dashboard:
+1. Abra um terminal na pasta do projeto e navegue at a pasta `coleta`:
+   ```bash
+   cd coleta
+   python -m uvicorn server:app --host 0.0.0.0 --port 5002
+   ```
+2. No PC, abra o navegador e acesse a interface administrativa em:
+   **`http://localhost:5002`**
+3. Para iniciar a coleta e permitir que os dados sejam gravados no banco de dados, digite o nome do usuário e clique em **Iniciar Coleta**. (Os dados enviados pelo MetaQuest serão ignorados at que uma sessão seja formalmente iniciada pelo painel).
+4. Assim que iniciada, o gráfico se desenhar sozinho usando os dados recebidos.
+
+### ?? Alertas Críticos de Rede (Se o MetaQuest não conseguir enviar os dados):
+Como o MetaQuest tentar enviar requisições para a rede local (seu PC), bloqueios de rede são comuns. Verifique sempre:
+* **Firewall do Windows:** Certifique-se de que a porta `5002` (Inbound/Entrada - TCP) está liberada, ou desligue o firewall de redes privadas momentaneamente.
+* **VPNs e Antivírus (Ex: NordVPN):** Aplicativos de VPN possuem recursos como "Invisibility on LAN" ou "Kill Switch" que silenciosamente derrubam pacotes vindos do Quest, impedindo a comunicação. Desative o NordVPN completamente durante os experimentos.
+* **HTTPS:** A comunicação local ocorre sem certificados (via `http://`). Alguns navegadores tentam forçar `https://` (causando alertas de "Invalid HTTP request" no servidor Python). Certifique-se de sempre acessar usando o prefixo http puro.
+
