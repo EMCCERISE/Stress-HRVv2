@@ -1,4 +1,4 @@
-// UI Elements
+﻿// UI Elements
 const navLive = document.getElementById('nav-live');
 const navHistory = document.getElementById('nav-history');
 const sectionLive = document.getElementById('section-live');
@@ -71,7 +71,7 @@ try {
         }
     });
 } catch(e) {
-    alert("Erro interno no Gráfico: " + e.message);
+    alert("Erro interno no GrÃ¡fico: " + e.message);
     console.error("Chart load failed:", e);
 }
 
@@ -97,7 +97,7 @@ const API_BASE = '/api';
 // Live Collection Logic
 btnStart.addEventListener('click', async () => {
     const user = inputUsername.value.trim();
-    if (!user) return alert("Digite o nome do usuário.");
+    if (!user) return alert("Digite o nome do usuÃ¡rio.");
 
     try {
         const res = await fetch(`${API_BASE}/sessions`, {
@@ -124,7 +124,7 @@ btnStart.addEventListener('click', async () => {
 
         startPolling();
     } catch (e) {
-        alert("Erro ao iniciar sessão.");
+        alert("Erro ao iniciar sessÃ£o.");
         console.error(e);
     }
 });
@@ -134,7 +134,7 @@ btnStop.addEventListener('click', async () => {
         await fetch(`${API_BASE}/sessions/stop`, { method: 'PUT' });
         resetLiveUI();
     } catch (e) {
-        console.error("Erro ao parar sessão.", e);
+        console.error("Erro ao parar sessÃ£o.", e);
     }
 });
 
@@ -146,7 +146,7 @@ function resetLiveUI() {
     inputUsername.disabled = false;
     inputUsername.value = '';
     liveStatus.classList.remove('recording');
-    liveStatus.querySelector('.text').textContent = 'Aguardando Início';
+    liveStatus.querySelector('.text').textContent = 'Aguardando InÃ­cio';
     valBpm.textContent = '--';
     valHrv.textContent = '--';
 }
@@ -206,7 +206,7 @@ async function checkActiveSession() {
             }
         }
     } catch (e) {
-        console.error("Erro ao checar sessão ativa", e);
+        console.error("Erro ao checar sessÃ£o ativa", e);
     }
 }
 
@@ -236,12 +236,12 @@ async function loadHistory() {
             sessionList.appendChild(div);
         });
     } catch (e) {
-        console.error("Erro ao carregar histórico", e);
+        console.error("Erro ao carregar histÃ³rico", e);
     }
 }
 
 async function loadHistoryData(session) {
-    histSessionTitle.textContent = `Sessão: ${session.user_name} (${new Date(session.start_time).toLocaleString('pt-BR')})`;
+    histSessionTitle.textContent = `SessÃ£o: ${session.user_name} (${new Date(session.start_time).toLocaleString('pt-BR')})`;
     try {
         const res = await fetch(`${API_BASE}/sessions/${session.id}/data`);
         const data = await res.json();
@@ -254,9 +254,32 @@ async function loadHistoryData(session) {
         historyChart.data.datasets[1].data = data.map(d => d.hrv);
         historyChart.update();
     } catch (e) {
-        console.error("Erro ao carregar dados da sessão", e);
+        console.error("Erro ao carregar dados da sessÃ£o", e);
     }
 }
 
 // Init
 checkActiveSession();
+
+
+// Theme Toggle
+const btnTheme = document.getElementById("btn-theme");
+btnTheme.addEventListener("click", () => {
+    document.body.classList.toggle("light-theme");
+    const isLight = document.body.classList.contains("light-theme");
+    btnTheme.textContent = isLight ? "??" : "??";
+    
+    // Atualizar as cores de grid/texto dos gráficos para se adaptarem ao tema
+    const textColor = isLight ? "#64748b" : "#94a3b8";
+    const gridColor = isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.05)";
+    
+    [liveChart, historyChart].forEach(chart => {
+        if (!chart) return;
+        chart.options.scales.x.grid.color = gridColor;
+        chart.options.scales.x.ticks.color = textColor;
+        chart.options.scales.y.grid.color = gridColor;
+        chart.options.scales.y.ticks.color = textColor;
+        chart.update();
+    });
+});
+
